@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: Therapist Appointment Service
+  version: 1.0.0
+  description: API contract for booking, rescheduling, cancelling appointments and managing therapist calendar blocks.
+
+servers:
+  - url: http://localhost:8081/api/v1
+
+paths:
+  /appointments/book:
+    post:
+      operationId: bookAppointment
+      summary: Book a new appointment
+      tags: [Appointments]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookAppointmentRequest'
+      responses:
+        '201':
+          description: Appointment booked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+        '400':
+          description: Slot unavailable or validation error
+
+  /appointments/reschedule/{id}:
+    put:
+      operationId: rescheduleAppointment
+      summary: Reschedule an appointment
+      tags: [Appointments]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleAppointmentRequest'
+      responses:
+        '200':
+          description: Appointment rescheduled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+        '404':
+          description: Appointment not found
+        '409':
+          description: Conflict - appointment was updated by another process
+
+  /appointments/cancel/{id}:
+    put:
+      operationId: cancelAppointment
+      summary: Cancel an appointment
+      tags: [Appointments]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+        '404':
+          description: Appointment not found
+        '409':
+          description: Conflict - appointment was updated by another process
+
+  /calendar/block:
+    post:
+      operationId: blockCalendar
+      summary: Block therapist calendar for holidays or time off
+      tags: [Calendar]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockCalendarRequest'
+      responses:
+        '201':
+          description: Calendar block created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarBlockResponse'
+
+  /calendar/view:
+    get:
+      operationId: viewCalendar
+      summary: View therapist calendar (appointments + blocks)
+      tags: [Calendar]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: therapistId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Calendar view returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AppointmentResponse'
+                  blocks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalendarBlockResponse'
+
+components:
+  schemas:
+    BookAppointmentRequest:
+      type: object
+      required: [therapistId, userId, startTime, endTime]
+      properties:
+        therapistId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+      x-class-extra-annotations:
+        - "@com.theratime.validation.ValidAppointmentTime"
+
+    RescheduleAppointmentRequest:
+      type: object
+      required: [startTime, endTime]
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+      x-class-extra-annotations:
+        - "@com.theratime.validation.ValidAppointmentTime"
+
+    AppointmentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        therapistId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [BOOKED, RESCHEDULED, CANCELLED, COMPLETED]
+        googleMeetLink:
+          type: string
+
+    BlockCalendarRequest:
+      type: object
+      required: [therapistId, startTime, endTime, reason]
+      properties:
+        therapistId:
+          type: integer
+          format: int64
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        reason:
+          type: string
+
+    CalendarBlockResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        therapistId:
+          type: integer
+          format: int64
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        reason:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

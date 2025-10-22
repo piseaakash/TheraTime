@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Parent POM for Theratime multi-module project -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.theratime</groupId>
+  <artifactId>theratime-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Theratime Parent</name>
+  <description>Parent POM for Theratime microservices (auth-ms, user-ms, appointment-ms)</description>
+
+  <!-- MODULES -->
+  <modules>
+    <module>auth-service</module>
+    <module>user-service</module>
+    <module>appointment-service</module>
+  </modules>
+
+  <!-- COMMON PROPERTIES -->
+  <properties>
+    <!-- Update Spring Boot version as required -->
+    <spring-boot.version>3.2.0</spring-boot.version>
+    <java.version>17</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <!-- The property below is preferred for Java 9+ projects -->
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <!-- ... other properties ... -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Plugin versions -->
+
+    <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+    <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
+    <maven.failsafe.plugin.version>3.1.2</maven.failsafe.plugin.version>
+    <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
+  </properties>
+
+  <!-- IMPORT SPRING BOOT DEPENDENCY MANAGEMENT (BOM) -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- You may add other BOMs here (e.g., test libs) -->
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- COMMON PLUGIN MANAGEMENT: modules inherit these defaults -->
+  <build>
+    <pluginManagement>
+      <plugins>
+
+        <!-- Maven Compiler -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+          <configuration>
+            <release>${java.version}</release>
+            <encoding>${project.build.sourceEncoding}</encoding>
+            <compilerArgs>
+              <arg>-parameters</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+
+        <!-- Spring Boot Maven Plugin (provided for modules to use) -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <!-- don't bind repackage at parent level; modules will use it when needed -->
+        </plugin>
+
+        <!-- Surefire (unit tests) -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+          <configuration>
+            <useSystemClassLoader>true</useSystemClassLoader>
+            <forkCount>1C</forkCount>
+            <reuseForks>true</reuseForks>
+          </configuration>
+        </plugin>
+
+        <!-- Failsafe (integration tests) -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven.failsafe.plugin.version}</version>
+        </plugin>
+
+        <!-- JaCoCo for coverage -->
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>report</id>
+              <phase>test</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <!-- COMMON DEPENDENCY MANAGEMENT (optional common deps you expect across modules) -->
+  <!-- Keep this minimal; modules should declare actual dependencies they need. -->
+  <dependencies>
+    <!-- Example: include lombok here so modules can simply declare dependency without versions -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Test helpers as examples (versions managed by spring-boot-dependencies/BOM) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <!-- SIMPLE PROFILE: a convenience profile that builds all modules (default behavior) -->
+  <profiles>
+    <profile>
+      <id>integration</id>
+      <activation>
+        <property>
+          <name>integration</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <!-- Example: bind failsafe integration test execution when -Pintegration is used -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>
