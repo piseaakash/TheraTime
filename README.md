@@ -50,7 +50,7 @@ flowchart LR
 
 ---
 
-### What this project demonstrates about me as an engineer
+### Highlights of the project
 
 - **Pragmatic distributed systems design**:  
   Schema-per-tenant multi-tenancy; transactional outbox; Kafka-based events; idempotent notifications with retries/backoff and DLQ.  
@@ -185,7 +185,9 @@ For more API details, see the OpenAPI specs:
 
 ### Deployment (local & production-oriented)
 
-For detailed steps, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. High level:
+For detailed steps, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. 
+
+High level:
 
 - **Local (Docker Compose)**:
   - `docker-compose build`
