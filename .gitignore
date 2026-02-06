@@ -1,6 +1,7 @@
 HELP.md
 target/
 backup_poms/
+htmlReport/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

@@ -18,26 +18,24 @@
     <module>auth-service</module>
     <module>user-service</module>
     <module>appointment-service</module>
+    <module>notification-service</module>
   </modules>
 
   <!-- COMMON PROPERTIES -->
   <properties>
     <!-- Update Spring Boot version as required -->
-    <spring-boot.version>3.2.0</spring-boot.version>
+    <spring-boot.version>3.5.7</spring-boot.version>
     <java.version>17</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
-    <!-- The property below is preferred for Java 9+ projects -->
-    <maven.compiler.release>${java.version}</maven.compiler.release>
     <!-- ... other properties ... -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- Plugin versions -->
+    <!-- Plugin / library versions -->
 
     <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
     <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
     <maven.failsafe.plugin.version>3.1.2</maven.failsafe.plugin.version>
     <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
+    <resilience4j.version>2.2.0</resilience4j.version>
   </properties>
 
   <!-- IMPORT SPRING BOOT DEPENDENCY MANAGEMENT (BOM) -->
@@ -65,7 +63,9 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
           <configuration>
-            <release>${java.version}</release>
+            <!--<release>${java.version}</release>
+            <source>${java.version}</source>
+            <target>${java.version}</target>-->
             <encoding>${project.build.sourceEncoding}</encoding>
             <compilerArgs>
               <arg>-parameters</arg>

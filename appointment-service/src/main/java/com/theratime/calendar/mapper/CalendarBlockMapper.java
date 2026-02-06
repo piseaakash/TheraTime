@@ -14,6 +14,7 @@ import java.time.ZoneOffset;
 @Mapper(componentModel = "spring", builder = @Builder(disableBuilder = false))
 public interface CalendarBlockMapper {
 
+    @Mapping(target = "id", ignore = true)
     CalendarBlock toEntity(BlockCalendarRequest request);
 
     CalendarBlockResponse toResponse(CalendarBlock block);

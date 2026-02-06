@@ -20,6 +20,9 @@ public class AppointmentTimeValidator implements ConstraintValidator<ValidAppoin
     }
 
     private boolean validateStartEnd(LocalDateTime startTime, LocalDateTime endTime) {
-        return endTime.isAfter(startTime);
+        return endTime.isAfter(startTime)
+                && startTime.isAfter(LocalDateTime.now())
+                && endTime.isAfter(LocalDateTime.now())
+                && endTime.isBefore(startTime.plusHours(3));
     }
 }

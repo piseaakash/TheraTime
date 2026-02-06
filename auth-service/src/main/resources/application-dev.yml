@@ -23,9 +23,58 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    schemas: public
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
 
 logging:
   level:
     root: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.flywaydb: DEBUG
+
+jwt:
+  access-token-expiry-ms: 900000 # 15 minutes
+  refresh-token-expiry-ms: 604800000 # 7 days
+  secret: theratime_super_secure_jwt_secret_key_32_chars_min
+
+user:
+  url: http://localhost:8082/api
+
+resilience4j:
+  retry:
+    instances:
+      userServiceRegister:
+        max-attempts: 3
+        wait-duration: 500ms
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+  circuitbreaker:
+    instances:
+      userServiceRegister:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3

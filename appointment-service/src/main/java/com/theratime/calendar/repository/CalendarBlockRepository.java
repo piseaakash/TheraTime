@@ -1,6 +1,5 @@
 package com.theratime.calendar.repository;
 
-import com.theratime.appointment.entity.Appointment;
 import com.theratime.appointment.entity.CalendarBlock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +18,4 @@ public interface CalendarBlockRepository extends JpaRepository<CalendarBlock, Lo
     AND cb.endTime > :startTime
     """)
     boolean isTherapistBlocked(Long therapistId, LocalDateTime startTime, LocalDateTime endTime);
-
-
 }

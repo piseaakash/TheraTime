@@ -16,6 +16,8 @@ import java.time.ZoneOffset;
 public interface AppointmentMapper {
 
     @Mapping(target = "status", constant = "BOOKED")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "version", ignore = true)
     Appointment toEntity(BookAppointmentRequest request);
 
     @Mapping(target = "status", source = "status")

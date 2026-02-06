@@ -12,12 +12,16 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>com.theratime</groupId>
 	<artifactId>auth-ms</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>auth-ms</name>
 	<description>Authentication microservice (JWT) for Theratime</description>
+
+	<properties>
+		<java.version>${java.version}</java.version>
+		<commons-lang3.version>3.18.0</commons-lang3.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -32,7 +36,15 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>0.2.4</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-web</artifactId>
+		</dependency>
 		<!-- JWT helper (use whichever lib you prefer; spring-security-jwt or jjwt) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -51,7 +63,11 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+			<version>9.22.0</version> <!-- Use the latest version -->
+		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -71,21 +87,69 @@
 			<version>2.5.0</version>
 		</dependency>
 
-		<!-- Test deps -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
 		</dependency>
+
+		<!-- Test deps -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- In-memory database for tests -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Resilience4j for retries/circuit breakers on cross-service calls -->
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot3</artifactId>
+			<version>${resilience4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>7.15.0</version>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<goals><goal>generate</goal></goals>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/openapi/auth-api.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<output>${project.build.directory}/generated-sources/openapi</output>
+							<apiPackage>com.theratime.auth.api</apiPackage>
+							<modelPackage>com.theratime.auth.model</modelPackage>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
+							<configOptions>
+								<useBeanValidation>true</useBeanValidation>
+								<useJakartaEe>true</useJakartaEe>
+								<delegatePattern>true</delegatePattern>
+								<useSpringRestController>true</useSpringRestController>
+							</configOptions>
+							<templateDirectory>${project.basedir}/src/main/resources/openapi-templates/JavaSpring
+							</templateDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- annotation processors -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -104,6 +168,38 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.1.4</version>
+			</plugin>
+
+			<!-- JaCoCo for test coverage; exclude DTOs, entities, generated API/model, main -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<excludes>
+								<exclude>**/com/theratime/auth/entity/**/*.class</exclude>
+								<exclude>**/com/theratime/auth/dto/**/*.class</exclude>
+								<exclude>**/com/theratime/auth/api/**/*.class</exclude>
+								<exclude>**/com/theratime/auth/model/**/*.class</exclude>
+								<exclude>**/AuthServiceApplication.class</exclude>
+								<exclude>**/com/theratime/auth/config/SecurityConfig.class</exclude>
+								<exclude>**/org/openapitools/**/*.class</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!-- Flyway if you use it for migrations in auth -->

@@ -12,7 +12,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/appointmentsdb
     username: appointment_user
-    password: appointmentpass
+    password: appointment_pass
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -59,12 +59,12 @@ management:
       prometheus:
         enabled: true
   tracing:
-    enabled: false
+    enabled: true
     sampling:
       probability: 1.0   # capture all traces in dev (adjust in prod)
   zipkin:
     tracing:
-      endpoint: ""
+      endpoint: "http://localhost:9411/api/v2/spans"
 
 logging:
   level:
@@ -73,3 +73,38 @@ logging:
     org.hibernate.SQL: DEBUG
     org.springframework.http.converter.json: DEBUG
     com.fasterxml.jackson.databind: DEBUG
+
+jwt:
+  secret: theratime_super_secure_jwt_secret_key_32_chars_min
+
+user:
+  service:
+    url: http://localhost:8082/api
+
+app:
+  kafka:
+    topic:
+      appointment-events: appointment.events
+  outbox:
+    tenant-ids: 1,2
+    max-attempts: 5
+    interval-ms: 5000
+
+resilience4j:
+  retry:
+    instances:
+      userServiceLookup:
+        max-attempts: 3
+        wait-duration: 500ms
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+  circuitbreaker:
+    instances:
+      userServiceLookup:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3

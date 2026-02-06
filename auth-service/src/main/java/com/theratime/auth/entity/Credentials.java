@@ -20,7 +20,13 @@ public class Credentials {
     @Column(nullable = false)
     private String passwordHash;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     private String refreshToken;
+
+    @Column
+    private LocalDateTime refreshTokenExpiry;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
